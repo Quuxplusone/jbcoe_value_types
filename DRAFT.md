@@ -544,17 +544,28 @@ where they would otherwise be a valid replacement.
 
 ## Tagged constructors
 
-Constructors for `indirect` and `polymorphic` taking an allocator or owned-object
-constructor arguments are tagged with `allocator_arg_t` and `in_place_t`
+Constructors for `indirect` and `polymorphic` taking an allocator and/or
+constructor arguments for the owned object
+are tagged with `allocator_arg_t` and `in_place_t`
 (or `in_place_type_t`) respectively. This is consistent with the standard
 library’s use of tagged constructors in `optional`, `any` and `variant`.
 
-Without `in_place_t` the constructor of `indirect` would not be able to
-construct an owned object using the owned object’s allocator-extended
-constructor. `indirect(std::in_place, std::allocator_arg, alloc, args)`
-unambiguously constructs an `indirect` with a default constructed allocator and
-an owned object constructed with an allocator extended constructor taking an
-allocator `alloc` and constructor arguments `args`.
+`indirect(std::allocator_arg, alloc, args)` constructs an `indirect`
+whose allocator is `alloc` and whose owned object is constructed by
+*uses-allocator construction* with allocator `alloc` and constructor arguments `args`.
+In contrast, `indirect(std::in_place, args)` constructs an `indirect`
+whose allocator is default-initialized and whose owned object is
+direct-non-list-initialized from `args`.
+
+These tags can be combined, with no additional effort on the library side.
+*Example:* `indirect(std::in_place, std::allocator_arg, alloc, args)`
+constructs an `indirect` whose allocator is a default-initialized and
+whose owned object is direct-non-list-initialized from
+`std::allocator_args, alloc, args`.
+*Example:* `indirect(std::allocator_arg, alloc, std::in_place, args)`
+constructs an `indirect` whose allocator is `alloc` and
+whose owned object is constructed by *uses-allocator construction*
+with allocator `alloc` and constructor arguments `std::in_place, args`.
 
 ## Single-argument constructors
 
